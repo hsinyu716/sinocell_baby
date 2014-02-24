@@ -1,0 +1,129 @@
+/* 
+    Document   : all
+    Created on : 2011/11/10, 下午 07:28:43
+    Author     : LowkeyMan
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
+}
+
+a{
+    cursor: pointer;
+    color: blue;
+}
+
+.radius{
+    background-color: #fff;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding:8px;
+    display: none;
+    border: 8px solid  rgba(200, 200, 200, .5);
+    overflow: hidden;
+    width:100px;
+    height: 100px;
+}
+
+div#loading{
+    width:250px;
+    height:80px;
+    line-height: 80px;
+    font-size:14pt;
+    text-align: center;
+    padding: 0px;
+    border: 0px solid  rgba(200, 200, 200, .5);
+    
+}
+
+div#friends_list{
+    width:650px;
+    height:430px;
+}
+
+div#friends_list_selected{
+    position: relative;
+    top:100%;
+    margin-top: -80px;
+    border: 0px solid red;
+    width:100%;
+    height:80px;
+    overflow: hidden;
+    line-height: 40px;
+    background-color: #fff;
+    padding-left: 7px;
+}
+
+div#friends_list_selected img{
+    vertical-align:middle;
+}
+
+div#friends_list_block img{
+     vertical-align:middle;
+}
+
+div#friends_list_block input{
+     margin: 5px;
+}
+
+div#friends_list_block div:hover{
+    background-color: #e5e5e5;
+    cursor: pointer;
+}
+
+div#friends_list_block{
+    width:650px;
+    height:360px;
+    overflow: auto;
+    border: 0px solid red;
+}
+
+div#friends_list_block div, .selected_friends{
+    width:190px;
+    height: 25px;
+    border: 1px solid #FFF;
+    margin: 5px;
+    float: left;
+    font-size: 13px;
+    padding: 3px;
+    line-height: 100%;
+}
+
+.selected_friends{
+    width:150px;
+    margin:2px;
+    border: 1px solid #eee;
+}
+
+.selected_friends:hover{
+    background-color:#e13333;
+    cursor: pointer;
+}
+
+#link2index{
+    border: 0px solid red;
+    width: 300px;
+    height: 150px;
+    position:absolute;
+    left:20px;
+    top: 20px;
+    z-index: 1;
+}
+
+#link2index_list{
+    border: 0px solid red;
+    width: 230px;
+    height: 260px;
+    position:absolute;
+    left:20px;
+    top: 20px;
+    z-index: 1;
+}

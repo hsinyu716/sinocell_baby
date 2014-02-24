@@ -1,0 +1,202 @@
+@charset "utf-8";
+/* CSS Document */
+
+#all_box {
+	width: 760px;
+	margin-right: auto;
+	margin-left: auto;
+	height: 1200px;
+}
+#project-box {
+	float: left;
+	height: 34px;
+	width: 335px;
+	margin-top: 40px;
+	margin-left: 200px;
+}
+#teble-box {
+	float: left;
+	width: 431px;
+	margin-top: 30px;
+	margin-left: 170px;
+}
+#table-box_title_content_1 {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	line-height: 18px;
+	float: left;
+	width: 370px;
+	margin-left: 30px;
+	color: #666;
+	margin-top: 10px;
+}
+
+#table-box_title {
+	background-image: url(images/table_r1_c1.jpg);
+	float: left;
+	height: 40px;
+	width: 431px;
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 18px;
+	font-weight: bold;
+	color: #FFF;
+}
+#table-box_title_font {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 14px;
+	font-weight: bold;
+	color: #FFF;
+	margin-top: 12px;
+	margin-left: 8px;
+}
+#table-box_title_font2 {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 14px;
+	font-weight: bold;
+	color: #FFF;
+	margin-top: 12px;
+	margin-left: 8px;
+}
+
+#table-box_title_content {
+	background-image: url(images/table_r2_c1.jpg);
+	float: left;
+	width: 431px;
+}
+#table-box_title_content2 {
+	background-image: url(images/table_r2_c1.jpg);
+	float: left;
+	width: 431px;
+}
+#sent-box {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	font-weight: bold;
+	float: left;
+	width: 200px;
+	margin-top: 50px;
+	margin-left: 285px;
+}
+
+#table-box_title_content_tatle {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	color: #930;
+	float: left;
+	width: 300px;
+	margin-top: 15px;
+	margin-left: 97px;
+}
+#table-box_title_content_explain {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	float: left;
+	width: 200px;
+	margin-top: 5px;
+	margin-left: 160px;
+	line-height: 18px;
+}
+
+
+#table-box_title_content_problem {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 16px;
+	color: #999;
+	float: left;
+	margin-top: 10px;
+	font-weight: bold;
+	margin-left: 90px;
+}
+#table-box_title_content_a {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	color: #930;
+	float: left;
+	width: 200px;
+	margin-top: 10px;
+	margin-left: 170px;
+}
+#table-box_title_foot {
+	background-image: url(images/table_r3_c1.jpg);
+	float: left;
+	height: 33px;
+	width: 431px;
+}
+#movie-box {
+	float: left;
+	height: 391px;
+	width: 642px;
+	margin-top: 30px;
+	margin-left: 58px;
+}
+#all_box #teble-box #table-box_title table tr td {
+	font-size: 14px;
+}
+#all_box #teble-box #table-box_title_content2 #table-box_title_content_tatle table {
+	text-align: left;
+}
+#event-box {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	line-height: 18px;
+	color: #666;
+	float: left;
+	width: 572px;
+	margin-top: 27px;
+	margin-left: 92px;
+}
+#event-box_content_2 {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	line-height: 18px;
+	color: #666;
+	float: left;
+	width: 572px;
+	background-image: url(images/box_2.jpg);
+}
+#event-box_content_1 {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	line-height: 18px;
+	color: #666;
+	float: left;
+	height: 22px;
+	width: 572px;
+	background-image: url(images/box_1.jpg);
+}
+#event-box_content_3 {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	line-height: 18px;
+	color: #666;
+	float: left;
+	height: 22px;
+	width: 572px;
+	background-image: url(images/box_3.jpg);
+}
+
+
+#finish-box_content {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	line-height: 18px;
+	color: #666;
+	float: left;
+	height: 70px;
+	width: 400px;
+	margin-top: 110px;
+	margin-left: 90px;
+	margin-bottom: 70px;
+}
+
+#list-box_content {
+	font-family: Arial, Helvetica, sans-serif, "微軟正黑體";
+	font-size: 12px;
+	line-height: 18px;
+	color: #666;
+	float: left;
+	height: 320px;
+	width: 535px;
+	margin-top: 20px;
+	margin-left: 20px;
+}

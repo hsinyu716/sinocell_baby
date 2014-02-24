@@ -1,0 +1,59 @@
+/*@charset "utf-8";
+/* Kei reset css version 2011.03.01, This document validates as CSS level 2.1 + CSS level 3.0 beta | kei.tw*/
+
+html {-webkit-text-size-adjust:none;} /* for webkit browser*/
+html, body {margin:0; line-height:1;}
+
+abbr, acronym, address, article, aside, audio,
+b, basefont, bdo, big, blockquote,
+canvas, caption, center, cite, code, command,
+datalist, dd, del, details, dfn, dir, div, dl, dt,
+em, embed,
+fieldset, figcaption, figure, font, footer, form, frame, frameset,
+h1, h2, h3, h4, h5, h6, header, hgroup,
+i, iframe, img, ins,
+kbd,
+label, legend, li,
+map, mark, menu, meter,
+nav, noframes, noscript,
+object, ol, output,
+p, pre, progress,
+q,
+rp, rt, ruby,
+s, samp, section, small, span, strike, strong, sub, summary, sup,
+/*table,*/ tbody, /*td,*/ tfoot, th, thead, time, /*tr,*/ tt,
+u, ul,
+var, video,
+wbr
+{margin:0; padding:0; border:none; outline:none; color:inherit; font-size:100%; background:transparent; vertical-align:baseline;}
+
+ol, ul, menu, dir {list-style:none;}
+/*table {width:100%; border-collapse:collapse; border-spacing:0; border-color:transparent; color:inherit; text-align:left; font:inherit;}
+table, td, th {table-layout:fixed;}*/
+code, kbd, samp, tt {font-family:inherit;}
+address, b, cite, del, em, i, ins, s, strike, strong, u, var, :link, :visited {font-style:normal; text-decoration:none;}
+pre, xmp, plaintext, listing {font-family:inherit; white-space:normal;}
+h1, h2, h3, h4, h5, h6 {font-weight:normal;}
+caption, th, center {font-weight:normal; text-align:left;}
+img, embed {vertical-align:top;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after, q:before, q:after {content:'';}
+:focus {outline:0;}
+
+input, textarea, keygen, select, button, isindex, datagrid {
+	margin:0;
+	padding:0;
+	line-height:10;
+	font:inherit;
+	letter-spacing:0;
+	word-spacing:0;
+}
+input[type="button"], input[type="reset"], input[type="submit"], button {cursor:pointer;}
+
+/* Clearfix */
+.clearfix:after {display:block; clear:both; height:0; line-height:0; visibility:hidden; content:".";}
+.clearfix {display:inline-block;}
+html[xmlns] .clearfix {display:block;}
+* html .clearfix {height:1%;}
+/* Clearfix end*/
+*/

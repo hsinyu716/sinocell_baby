@@ -1,0 +1,321 @@
+@charset "utf-8";
+/* CSS Document */
+
+.btn5{
+	float:left;
+	width:199px;
+	height:129px;
+	top:440px;
+	left:519px;
+	position:absolute;
+	cursor:pointer;
+	background-image:url(../img/btn5.png)
+	}
+
+.bg4>div>.sacker5{/*三壘*/
+	float:left;
+	width:80px;
+	height:144px;
+	top:196px;
+	left:192px;
+	position:absolute;
+	cursor:pointer;
+    }
+.sacker5 > .head{
+   width:64px;
+	height:64px;
+    top: 18px;
+    left: 11px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.sacker5 > .ymsg{
+    width:232px;
+	height:24px;
+    top: 100px;
+    left:-95px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;
+    z-index: 9999;
+    }
+
+.bg4>div>.sacker6{/*二壘*/
+	float:left;
+	width:80px;
+	height:145px;
+	top:92px;
+	left:345px;
+	position:absolute;
+	cursor:pointer;
+    }
+.sacker6> .head{
+   width:64px;
+	height:64px;
+    top: 17px;
+    left: 8px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.sacker6 > .ymsg{
+    width:232px;
+	height:24px;
+    top: 110px;
+    left:-65px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;
+    z-index: 9999;
+    }
+.bg4>div>.sacker7{/*一壘*/
+	float:left;
+	width:80px;
+	height:150px;
+	top:238px;
+	left:555px;
+	position:absolute;
+	cursor:pointer;
+   	}
+.sacker7> .head{
+    width:64px;
+	height:64px;
+    top: 19px;
+    left: 7px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.sacker7 > .ymsg{
+    width:232px;
+	height:24px;
+    top: 115px;
+    left:-72px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;*/
+    z-index: 9999;
+    }
+
+.bg4>div>.sacker2{/*左外*/
+	float:left;
+	width:80px;
+	height:150px;
+	top:62px;
+	left:102px;
+	position:absolute;
+	cursor:pointer;
+    }
+.sacker2> .head{
+    width:64px;
+	height:64px;
+    top: 16px;
+    left: 10px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.sacker2 > .ymsg{
+    width:232px;
+	height:24px;
+    top: 108px;
+    left:-72px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;*/
+    z-index: 9999;
+    }
+
+.bg4>div>.sacker4{/*右外*/
+	float:left;
+	width:80px;
+	height:150px;
+	top:9px;
+	left:485px;
+	position:absolute;
+	cursor:pointer;
+    }
+.sacker4> .head{
+   width:64px;
+	height:64px;
+    top: 18px;
+    left: 10px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.sacker4 > .ymsg{
+    width:232px;
+	height:24px;
+    top: 108px;
+    left:-59px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;*/
+    z-index: 9999;
+    }
+
+.bg4>div>.mascot3{/*吉祥物*/
+	float:left;
+	width:80px;
+	height:150px;
+	top:72px;
+	left:670px;
+	position:absolute;
+	cursor:pointer;
+    }
+.mascot3> .head{
+     width:64px;
+	height:64px;
+    top: 18px;
+    left: 12px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.mascot3 > .ymsg{
+    width:232px;
+	height:24px;
+    top: 108px;
+    left:-145px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;*/
+    z-index: 9999;
+    }
+
+.bg4>.user1{/*投手*/
+	float:left;
+	width:137px;
+	height:161px;
+	top:282px;
+	left:335px;
+	position:absolute;
+	cursor:pointer;
+    }
+.user1> .head{
+   width:64px;
+	height:64px;
+    top: 21px;
+    left: 23px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+
+.bg4>div>.lala{/*啦啦隊*/
+	float:left;
+	width:164px;
+	height:142px;
+	top:318px;
+	left:7px;
+	position:absolute;
+	cursor:pointer;
+    }
+.lala> .head{
+     width:64px;
+	height:64px;
+    top: 17px;
+    left: 48px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.lala > .ymsg{
+    width:232px;
+	height:24px;
+    top: 90px;
+    left:-2px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;*/
+    z-index: 9999;
+    }
+.bg4>div>.catch9{/*捕手*/
+	float:left;
+	width:110px;
+	height:135px;
+	top:445px;
+	left:345px;
+	position:absolute;
+	cursor:pointer;
+    }
+.catch9> .head{
+    width:64px;
+	height:64px;
+    top: 22px;
+    left: 21px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.catch9 > .ymsg{
+    width:232px;
+	height:24px;
+    top: 110px;
+    left:-30px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;*/
+    z-index: 9999;
+    }
+.bg4>div>.coach{/*安西教練*/
+	float:left;
+	width:80px;
+	height:144px;
+	top:436px;
+	left:178px;
+	position:absolute;
+	cursor:pointer;
+	}
+.coach> .head{
+     width:64px;
+	height:64px;
+    top: 16px;
+    left: 7px;
+	position:absolute;
+	/*background-color: #FFF;*/
+    }
+.coach > .ymsg{
+    width:232px;
+	height:24px;
+    top: 90px;
+    left:-100px;
+	position:absolute;
+	background:url(../img/ymsg.png);
+    visibility:hidden;
+    z-index: 9999;
+    }
+    
+.bg6 .check02 {
+    width: 213px;
+    height: 40px;
+    top: 423px;
+    left: 367px;
+    position: absolute;
+    cursor: pointer;
+}
+    
+    
+.name_in{
+    width: 216px;
+    height: 30px !important;
+    top: 253px;
+    left: 420px;
+    position: absolute;
+    padding: 10px;    
+    border:0 !important;
+    background:none !important;
+}
+.tel_in{
+    width: 216px;
+    height: 30px !important;
+    top: 308px;
+    left: 420px;
+    position: absolute;
+    padding: 10px;   
+    border:0 !important;
+    background:none !important;
+}
+.mail_in{
+    width: 216px;
+    height: 30px !important;
+    top: 362px;
+    left: 420px;
+    position: absolute;
+    padding: 10px;    
+    border:0 !important;
+    background:none !important;
+}
