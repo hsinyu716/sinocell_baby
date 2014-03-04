@@ -187,13 +187,18 @@ class backend extends CI_Controller {
     			}
     		}
     	}
-    		
-    	$sortMethod = SORT_ASC;
-    	if($sortorder == 'desc'){
-    		$sortMethod = SORT_DESC;
-    	}
-    		
-    	array_multisort($rows, $sortMethod);
+
+        $sortArray = array();
+        foreach($rows AS $key => $row){
+            $sortArray[$key] = $row[$sortname];
+        }
+
+        $sortMethod = SORT_ASC;
+        if($sortorder == 'desc'){
+            $sortMethod = SORT_DESC;
+        }
+            
+        array_multisort($sortArray, $sortMethod, $rows);
     		
     	$total = count($rows);
     	$rows = array_slice($rows,($page-1)*$rp,$rp);

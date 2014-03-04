@@ -113,11 +113,12 @@ $autoload['model'] = array(
 	'facebook_model',
 	'init_model',
 	'db_md',
-	'point_record_md',
-	'article_info_md',
-	'prize_info_md',
-	'exchange_info_md',
-	'user_info_md'
+	'user_info_md',
+	'file_info_md',
+	'baby_info_md',
+	'baby_infov_md',
+	'msg_info_md',
+	'friend_info_md'
 );
 
 

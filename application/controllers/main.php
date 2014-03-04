@@ -7,8 +7,9 @@ class Main extends CI_Controller {
 
 	function __construct() {
 		parent::__construct();
-		$this->load->library('gd_creater');
-		$this->gd_creater->delimg();
+		// $this->load->library('gd_creater');
+		// $this->gd_creater->delimg();
+		$this->load->helpers(['my_md5','age']);
 	}
 	
 	private function _getBaseData(){
@@ -35,33 +36,112 @@ class Main extends CI_Controller {
 		$this->init_model->apply_template_with_ga($this->router->method . '_view', $data);
 	}
 
-	public function check_user($echo=true){
+	public function check_user($echo=true,$fbid=0){
 		if(!empty($_POST['fbid'])):
 			$fbid = $_POST['fbid'];
-		else:
+		elseif($fbid==0):
 			$fbid = $this->facebook->getUser();
 		endif;
-		$params = array(
-			'fbid_d' => $fbid
-			);
-		$success = false;
-		$rs = $this->user_info_md->get_one($params);
-		if(sizeof($rs)==0):
+
+		$user = $this->facebook_model->getUser($fbid);
+
+		if($user['sex']=='male'):
+			$params = array(
+				'fbid_d' => $fbid
+				);
+		elseif($user['sex']=='female'):
 			$params = array(
 				'fbid_m' => $fbid
 				);
-			$rs = $this->user_info_md->get_one($params);
-			if($rs>0):
-				$success = true;
-			endif;
-		else:
+		endif;
+		$success = false;
+		$rs = $this->baby_infov_md->get_one($params);
+		if(sizeof($rs)>0):
 			$success = true;
 		endif;
+		$json = array(
+			'success' => $success
+			);
 		if($echo):
-			echo $success;
+			echo json_encode($json);
 		else:
 			return $rs;
 		endif;
+	}
+
+	public function guid(){
+		// $str = '100000289183379'.time();
+		// $md5 = str_md5($str);
+		// echo $md5;
+		
+		$age = getAge('2012-05-17');
+		var_dump($age);
+	}
+
+	public function notification($msg,$val,$fbid){
+		$params = array(
+            'access_token'=>FBAPP_ID.'|'.FBAPP_SECRET,
+            'href'=>'?'.$val,
+            'template'=>$msg);
+        $sendnotification = $this->facebook->api('/'.$fbid.'/notifications', 'post', $params);
+        exit;
+	}
+
+	/**
+	 * [check_friend 自動加好友]
+	 * @param  [type] $sid [description]
+	 * @return [type]      [description]
+	 */
+	public function check_friend($sid){
+		$fbid = $this->facebook->getUser();
+		$friends = $this->facebook_model->get_friends_list();
+		$fri_params = array();
+		foreach($friends as $fk=>$fv):
+			if($fv['sex']=='male'):
+				$params = array(
+					'fbid_d' => $fv['uid']
+					);
+			elseif($fv['sex']=='female'):
+				$params = array(
+					'fbid_m' => $fv['uid']
+					);
+			endif;
+			$rs = $this->baby_info_md->get_one($params);
+			if(sizeof($rs)>0):
+				$this->notification('加好友通知','t=1',$rs['serial_id']);
+				$params = array(
+					'a_baby' => $sid,
+					'b_baby' => $rs['serial_id']
+					);
+				$rs2 = $this->friend_info_md->getData($params);
+				if(sizeof($rs2)==0):
+					$fri_params[] = $params;
+					$params = array(
+						'b_baby' => $sid,
+						'a_baby' => $rs['serial_id']
+						);
+					$fri_params[] = $params;
+				endif;
+			endif;
+		endforeach;
+		if(sizeof($fri_params)>0):
+			$this->friend_info_md->insert_batch($fri_params);
+		endif;
+	}
+
+	public function getfriend($sid=0){
+		$params = array(
+			'a_baby' => $sid
+			);
+		$rs = $this->friend_info_md->getData($params);
+		$friends = array();
+		foreach($rs as $rk=>$rv):
+			$params = array(
+				'serial_id' => $rv['b_baby']
+				);
+			$friends[] = $this->baby_infov_md->get_one($params);
+		endforeach;
+		return $friends;
 	}
 	
 	public function result($babyname='') {
@@ -76,40 +156,195 @@ class Main extends CI_Controller {
 				$params = array(
 					'fbid_d' => $fbid,
 					'daddy' => $user['name'],
-					'babyname'=> $babyname
 					);
 			else:
 				$params = array(
 					'fbid_m' => $fbid,
-					'mom' => $user['name'],
-					'babyname'=> $babyname
+					'mom' => $usewr['name'],
 					);
 			endif;
-
-			$this->user_info_md->insert($params);
+			$params['babyname'] = $_POST['babyname'];
+			$params['master'] = $fbid;
+			$this->baby_info_md->insert($params);
+			$serial_id = $this->db->insert_id();
+			$this->check_friend($serial_id);
 		endif;
 		
+		// var_dump($check_user);
 		$check_user = $this->check_user(false);
 		$data['user'] = $check_user;
-// 		exit;
+		$params = array(
+			'baby_serial' => $check_user['serial_id']
+			);
+		$msg = $this->msg_info_md->getData($params);
+
+		foreach($msg as $mk=>$mv):
+			$baby = $this->check_user(false,$mv['fbid']);
+			$msg[$mk]['babyname'] = $baby['babyname'];
+			$msg[$mk]['baby_serial'] = $baby['serial_id'];
+			$msg[$mk]['photo'] = $baby['file_id'];
+		endforeach;
+
+		$data['msg'] = $msg;
+
+		$friends = $this->getfriend($check_user['serial_id']);
+
+		$data['friends'] = $friends;
+
+		$order = array(
+			'friends_cnt' => 'desc'
+			);
+		$limit = 3;
+		$offset = 0;
+		$rank = $this->rank($order,$limit,$offset);
+		$data['rank'] = $rank;
+		$data['is_view'] = false;
+		$data['is_friend'] = true;
+		// var_dump($rank);
 
 		$this->init_model->apply_template_with_ga($this->router->method . '_view', $data);
 	}
+	
+	public function view($serial_id) {
+		$data = $this->_getBaseData();
+
+		$params = array(
+			'serial_id' => $serial_id
+			);
+		$check_user = $this->baby_infov_md->get_one($params);
+
+		$data['user'] = $check_user;
+		$params = array(
+			'baby_serial' => $check_user['serial_id']
+			);
+		$msg = $this->msg_info_md->getData($params);
+
+		foreach($msg as $mk=>$mv):
+			$baby = $this->check_user(false,$mv['fbid']);
+			$msg[$mk]['babyname'] = $baby['babyname'];
+			$msg[$mk]['baby_serial'] = $baby['serial_id'];
+			$msg[$mk]['photo'] = $baby['file_id'];
+		endforeach;
+
+		$data['msg'] = $msg;
+
+		$friends = $this->getfriend($check_user['serial_id']);
+
+		$data['friends'] = $friends;
+
+		$order = array(
+			'friends_cnt' => 'desc'
+			);
+		$limit = 3;
+		$offset = 0;
+		$rank = $this->rank($order,$limit,$offset);
+		$data['rank'] = $rank;
+
+		$age = getAge($check_user['babybirthday']);
+		$data['age'] = $age;
+		$data['is_view'] = true;
+		// var_dump($rank);
+		
+		$fbid = $this->facebook->getUser();
+		$mydata = $this->check_user(false,$fbid);
+		$params = array(
+			'a_baby' => $mydata['serial_id'],
+			'b_baby' => $check_user['serial_id']
+			);
+		$rs = $this->friend_info_md->getCount($params);
+		$is_friend = false;
+		if($mydata['serial_id']==$check_user['serial_id'] || $rs==1):
+			$is_friend = true;
+		endif;
+		$data['is_friend'] = $is_friend;
+
+
+		$this->init_model->apply_template_with_ga('result_view', $data);
+	}
+
+
+	/**
+	 * [rank 排名]
+	 * @param  array  $order [description]
+	 * @return [type]        [description]
+	 */
+	public function rank($order=array(),$limit=0,$offset=0){
+		$params = array();
+
+		$list = $this->baby_infov_md->getData($params,$order,$limit,$offset);
+		return $list;
+	}
+
+	public function unit(){
+		// $this->load->library('unit_test');
+		// $test = 1 + 1;
+
+		// $expected_result = 2;
+
+		// $test_name = 'Adds one plus one';
+
+		// echo $this->unit->run('Foo', 'Foo');
+		// echo date('Y-m-d H:i:s','2014-02-27T14:00:00+0000');
+		$this->load->helpers('date');
+		$post_date = '1079621429';
+		$now = time();
+
+		echo timespan($post_date, $now);
+	}
+
+	public function joint(){
+		$check_user = $this->check_user(false);
+		// var_dump($check_user);
+		if(empty($check_user['fbid_d'])):
+			$params['fbid_d'] = $_POST['tofbid'];
+		elseif(empty($check_user['fbid_m'])):
+			$params['fbid_m'] = $_POST['tofbid'];
+		endif;
+		$params['is_joint'] = 'Y';
+		$where = $this->get_where('baby_info');
+		$success = FALSE;
+		$this->baby_info_md->update($params,$where);
+		$success = TRUE;
+		$json = array(
+				'success' => $success
+		);
+		
+		echo json_encode($json);
+	}
+
+	public function set_message(){
+		$fbid = $this->facebook->getUser();
+		
+		$params = $this->get_post('msg_info');
+		$this->msg_info_md->insert($params);
+		$params = array(
+			'baby_serial' => $_POST['serial_id']
+			);
+		$msg = $this->msg_info_md->getData($params);
+		$json = array(
+			'msg' => $msg
+			);
+		echo json_encode($json);
+	}
 
 	public function edit(){
-		$params = $this->get_post('user_info');
-		$where = $this->get_where('user_info');
-		$success = false;
-		$this->user_info_md->update($params,$where);
-		$success = true;
-		echo  $success;
+		$params = $this->get_post('baby_info');
+		$where = $this->get_where('baby_info');
+		$success = FALSE;
+		$this->baby_info_md->update($params,$where);
+		$success = TRUE;
+		$json = array(
+				'success' => $success
+		);
+		
+		echo json_encode($json);
 	}
 
 	public function get_post($table)
 	{
 		$data = null;
 		switch ($table){
-			case 'user_info':
+			case 'baby_info':
 				$data['daddy'] = $this->input->post('daddy');
 				$data['mom'] = $this->input->post('mom');
 				$data['babybirthday'] = $this->input->post('babybirthday');
@@ -122,6 +357,10 @@ class Main extends CI_Controller {
 				$data['start_time'] = $this->input->post('start_time');
 				$data['end_time'] = $this->input->post('end_time');
 				break;
+			case 'msg_info':
+				$data['fbid'] = $this->facebook->getUser();
+				$data['message'] = $this->input->post('message');
+				$data['baby_serial'] = $this->input->post('serial_id');
 		};
 
 		return $data;
@@ -130,7 +369,7 @@ class Main extends CI_Controller {
 	public function get_where($table){
 		$data = null;
 		switch ($table){
-			case 'user_info':
+			case 'baby_info':
 				$data['serial_id'] = $this->input->post('serial_id');
 				break;
 			case 'article_info':
@@ -139,93 +378,6 @@ class Main extends CI_Controller {
 		};
 
 		return $data;
-	}
-
-	public function exchange(){
-		$fbid = $this->facebook->getUser();
-		
-		$params = array(
-				'fbid' => $fbid,
-				'prize_serial' => $_POST['prize_serial']
-				);
-		$rs = $this->exchange_info_md->getCount($params);
-		
-		$success = false;
-		if($rs==0):
-			$params['point'] = $_POST['point'];
-			$this->exchange_info_md->insert($params);
-			$success = true;
-		endif;
-		
-		$score = $this->ajax_point();
-		
-		$json = array(
-				'success' => $success,
-				'point' => $score
-		);
-		
-		echo json_encode($json);
-	}
-	
-	public function more(){
-		$data = $this->_getBaseData();
-		$params = array();
-		$articles = $this->article_info_md->getData($params);
-		$data['articles'] = $articles; 
-		$this->init_model->apply_template_with_ga($this->router->method . '_view', $data);
-	}
-	
-	public function share(){
-		$fbid = $this->facebook->getUser();
-		$params = array(
-				'fbid' => $fbid,
-				'dtype' => 'share',
-				'post_id' => 0
-				);
-		$rs = $this->point_record_md->getCount($params);
-		$success = false;
-		if($rs==0):
-			$this->point_record_md->insert($params);
-			$success = true;
-		endif;
-		$score = $this->ajax_point();
-		
-		$json = array(
-				'success' => $success,
-				'point' => $score
-				);
-		
-		echo json_encode($json);
-	}
-	
-	public function message($fbid=0){
-		$data = $this->_getBaseData();
-		$data['fbid'] = $fbid;
-		
-		$this->init_model->apply_template_with_ga($this->router->method . '_view', $data);
-	}
-	
-	public function check_msg(){
-		$table = 'tag_record';
-		$rs = $this->db_md->getCount($table,$_POST);
-		$json = array(
-				'cnt' => $rs
-				);
-		echo json_encode($json);
-	}
-	
-	public function setMsg(){
-		$table = 'tag_record';
-		$params = array(
-				'message' => $_POST['message']
-				);
-		unset($_POST['message']);
-		$where = $_POST;
-		$this->db->update($table,$params,$where);
-		$json = array(
-				'success' => true
-		);
-		echo json_encode($json);
 	}
 	
 	public function redirect($fbid=0){
@@ -238,7 +390,7 @@ class Main extends CI_Controller {
 	}
 	
 	public function setData(){
-		$table = 'user_info';
+		$table = 'baby_info';
 		$fbid = $this->facebook->getUser();
 		
 		$params = array(
@@ -270,7 +422,7 @@ class Main extends CI_Controller {
 		
 		$fuser = $_SESSION[$fbid.'fuser'];
 		
-		$table = 'user_info';
+		$table = 'baby_info';
 		$params = array(
 				'fbid' => $fbid,
 				'is_join' => 'Y'

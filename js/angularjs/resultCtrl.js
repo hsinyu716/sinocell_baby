@@ -1,26 +1,49 @@
-var app = angular.module("myApp", []);
+var app = angular.module("myApp", ['ui.bootstrap']);
 
-app.controller("indexCtrl", function($scope, $http) {
-	$scope.login = function(o) {
-		if (o == 0) {
-			if ($scope.babyname == undefined || $scope.babyname == '') {
-				show_toastr('toast-top-right', 'warning', '請輸入寶寶名稱！', '');
-				return;
-			}
-			check_FB('result');
-		} else if (o == 1) {
-			check_FB('check');
+app.factory('myData', function() {
+	var data = friends;
+
+	return {
+		get: function(offset, limit) {
+			return data.slice(offset, offset + limit);
+		},
+		count: function() {
+			return data.length;
 		}
-	}
+	};
 });
 
-app.controller("resultCtrl", function($scope, $http) {
+/**
+ * [結果頁]
+ * @param  {[type]} $scope [description]
+ * @param  {[type]} $http  [description]
+ * @return {[type]}        [description]
+ */
+app.controller("resultCtrl", function($scope, $http, myData) {
 	$scope.user = user;
+	$scope.msg = msg;
+	$scope.rank = rank;
+	// $scope.serial_id = user.serial_id;
 
+	/**
+	 * [sexchange 更改性別]
+	 * @param  {[type]} o [description]
+	 * @return {[type]}   [description]
+	 */
 	$scope.sexchange = function(o) {
 		$scope.user.sex = o;
 	}
-
+	/**
+	 * [req_joint 邀請共同經營]
+	 * @return {[type]} [description]
+	 */
+	$scope.req_joint = function() {
+		$scope.apprequests(2);
+	}
+	/**
+	 * [edit_check 編輯驗證]
+	 * @return {[type]} [description]
+	 */
 	$scope.edit_check = function() {
 
 		if ($scope.user.daddy == undefined) {
@@ -39,25 +62,56 @@ app.controller("resultCtrl", function($scope, $http) {
 			show_toastr('toast-top-right', 'error', '請選擇寶寶性別！', '');
 			return;
 		}
-
 		if (user.is_update == 'N') {
-			FB.ui({
-				method: 'apprequests',
-				message: '跟其他爸爸媽媽說一起讓寶寶做朋友',
-				max_recipients: 3,
-			}, requestCallback);
-
-			function requestCallback(response) {
-				if (response.request && response.to) {
-					$scope.edit_();
-				}
-			}
-		}else{
+			$scope.apprequests(1);
+		} else {
 			$scope.edit_();
 		}
 	}
+	/**
+	 * [apprequests FB apprequests]
+	 * @param  {[type]} o [1:編輯後邀請朋友,2:共同經營,3:邀請朋友]
+	 * @return {[type]}   [description]
+	 */
+	$scope.apprequests = function(o) {
+		var message = '跟其他爸爸媽媽說一起讓寶寶做朋友';
+		var limit = 50;
+		if (o == 2) {
+			message = '邀請您的另一半共同經營';
+			limit = 1;
+		}
+		FB.ui({
+			method: 'apprequests',
+			message: message,
+			max_recipients: limit,
+		}, requestCallback);
 
-	$scope.edit_ = function(){
+		function requestCallback(response) {
+			if (o == 1) {
+				$scope.edit_();
+			} else if (o == 2 && response.request && response.to) {
+				$http({
+					method: 'POST',
+					url: jointurl,
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+					},
+					data: 'serial_id=' + user.serial_id + '&tofbid=' + response.to
+				}).success(function(data) {
+					if (data.success) {
+						show_toastr('toast-top-right', 'success', '邀請成功！', '');
+					}
+					_show($('#loading'));
+				});
+			}
+		}
+	}
+
+	/**
+	 * [edit_ 編輯處理]
+	 * @return {[type]} [description]
+	 */
+	$scope.edit_ = function() {
 		_show($('#loading'));
 		$http({
 			method: 'POST',
@@ -65,12 +119,76 @@ app.controller("resultCtrl", function($scope, $http) {
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
 			},
-			data: $('#baby_form').serialize()
+			data: $('#userForm').serialize()
 		}).success(function(data) {
 			if (data.success) {
 				show_toastr('toast-top-right', 'success', '編輯成功！', '');
 			}
+			user.is_update = 'Y';
 			_show($('#loading'));
+		});
+	}
+
+	$scope.lists = friends;
+	/**
+	 * [open_ 寶寶列表]
+	 * @param  {[type]} o [1:好友,2:所有]
+	 * @return {[type]}   [description]
+	 */
+	$scope.open_ = function(o) {
+		if (o == 1) {
+			$scope.lists = friends;
+			_show($('#list_div'));
+			$scope.pageChanged(1);
+		} else if (o == 2) {
+			$scope.oid = o;
+			_show($('#list_div'));
+		}
+	}
+
+	// datepicker
+	$scope.dateOptions = {
+		'year-format': "'yy'",
+		'starting-day': 1,
+		'show-weeks': false
+	};
+	$scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'shortDate'];
+	$scope.format = $scope.formats[1];
+
+	// pagination
+	$scope.maxSize = 5;
+	$scope.bigTotalItems = $scope.lists.length;
+	$scope.bigCurrentPage = 1;
+	$scope.numPerPage = 1;
+	$scope.pageChanged = function(pageNo) {
+		$scope.bigCurrentPage = pageNo;
+		$scope.lists = myData.get(($scope.bigCurrentPage - 1) * $scope.numPerPage, $scope.numPerPage);
+	};
+
+	$scope.my_view = function() {
+		location.href = resulturl;
+	}
+
+	/**
+	 * [set_message 留言]
+	 */
+	$scope.set_message = function() {
+		if ($scope.message == undefined || $scope.message == '') {
+			show_toastr('toast-top-right', 'error', '請輸入留言！', '');
+			return;
+		}
+		_show($('#loading'));
+		$http({
+			method: 'POST',
+			url: msgurl,
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+			},
+			data: 'message=' + $scope.message + '&serial_id=' + user.serial_id
+		}).success(function(data) {
+			_show($('#loading'));
+			$scope.msg = data.msg;
+			$scope.message = '';
 		});
 	}
 
@@ -176,35 +294,7 @@ app.controller("resultCtrl", function($scope, $http) {
 		}
 	}
 });
-app.controller("moreController", function($scope, $http) {
-	$scope.articles = articles;
-	$scope.back_ = function() {
-		location.href = backurl;
-	}
-});
-app.controller("msgController", function($scope, $http) {
-	$scope.submit_ = function(o) {
-		if ($('#message').val() == '') {
-			//bootbox.alert('請輸入留言！');
-			show_toastr('toast-top-right', 'error', '請輸入留言！', '');
-			return;
-		}
-		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: msgurl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			},
-			data: "fbid=" + o_fbid + "&tofbid=" + fbid + "&message=" + $('#message').val()
-		}).success(function(data) {
-			show_toastr('toast-top-right', 'success', '留言成功！', '');
-			setTimeout(function() {
-				location.href = indexurl;
-			}, 3000);
-		});
-	}
-});
+
 var backend = angular.module("myBackend", []).directive('numbersOnly', function() {
 	return {
 		require: 'ngModel',
