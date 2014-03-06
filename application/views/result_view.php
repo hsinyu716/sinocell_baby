@@ -1,27 +1,42 @@
+<script src="<?= WEB_HOST ?>js/angularjs/angular-file-upload.js"></script>
 <script type="text/javascript" src="<?= WEB_HOST ?>js/angularjs/resultCtrl.js" ></script>
 
 <script>
 
 var posturl = '<?= site_url('main/po_wall') ?>';
-var setDataurl = '<?= site_url('main/setData') ?>';
-var refreshurl = '<?= site_url('main/ajax_point') ?>/true';
-var shareurl = '<?= site_url('main/share') ?>';
-var moreurl = '<?= site_url('main/more') ?>';
+var moreurl = '<?= site_url('main/ajax_list') ?>';
 var editurl = '<?= site_url('main/edit') ?>';
 var jointurl = '<?= site_url('main/joint') ?>';
 var msgurl = '<?= site_url('main/set_message') ?>';
+var dmsgurl = '<?= site_url('main/del_message') ?>';
 var listurl = '<?= site_url('main/get_message') ?>';
 var resulturl = '<?= site_url('main/result') ?>';
+var uploadurl = '<?= site_url('file_main/do_upload') ?>';
+var gallaryurl = '<?= site_url('main/index') ?>';
+var setpicurl = '<?= site_url('main/set_pic') ?>';
+var addfriendurl = '<?= site_url('main/add_friend') ?>';
+var getfriendurl = '<?= site_url('main/getfriend') ?>';
 
 var user = <?= json_encode($user);?>;
 var msg = <?= json_encode($msg);?>;
 var rank = <?= json_encode($rank);?>;
 var friends = <?= json_encode($friends);?>;
+var mypic = 'img/a.jpg';
+var is_view = '<?=$is_view?>';
+var is_friend = '<?=$is_friend;?>';
+
 
 $(function(){
 	if(user.sex!=null){
 		$('#'+user.sex).prop('checked',true);
 	}
+
+	if(user.path!=null){
+		mypic = user.path;
+	}
+	angular.element(document.getElementById('angularobj')).scope().$apply(function(scope){
+        scope.setmypic(mypic);
+    });
 
 	if(user.is_update=='Y'){
 		
@@ -30,20 +45,31 @@ $(function(){
 });
 </script>
 
-<div ng-app="myApp" ng-controller="resultCtrl">
+<div id="angularobj" ng-app="myApp" ng-controller="resultCtrl">
 
 <div>
 	<a href="<?=site_url('main/view');?>/{{user.serial_id}}">
-		<img src="img/a.jpg" ng-show="user.file_id == NULL"/>
+		<img ng-src="{{ mypic }}" />
 		<span>{{ user.babyname }}</span>
 	</a>
-	<button ng-click="pick_photo()" ng-show="<?=!$is_view;?>">照片</button>
-	<button ng-click="add_friend()" ng-show="<?=!$is_friend;?>">加好友</button>
+	<button ng-click="gallery()" ng-show="is_view==='false'">圖庫</button>
+	<button ng-click="add_friend(user.serial_id)" ng-show="is_friend==='false'">加好友</button>
 </div>
 
-<button ng-click="my_view()" ng-show="<?=$is_view;?>">回我的頁面</button>
+<div id="gallery_div" style="display:none;">
+	<img src="img/a.jpg" ng-click="pick_pic('img/a.jpg');"/>
+	<img src="img/b.jpg" ng-click="pick_pic('img/b.jpg');"/>
+	<img src="img/c.jpg" ng-click="pick_pic('img/c.jpg');"/>
+	<img src="img/d.jpg" ng-click="pick_pic('img/d.jpg');"/>
+	<img src="img/e.jpg" ng-click="pick_pic('img/e.jpg');"/>
+	<img src="img/f.jpg" ng-click="pick_pic('img/f.jpg');"/>
+</div>
 
-<div ng-show="<?=!$is_view;?>">
+<input type="file" style="opacity: 1;" ng-file-select="onFileSelect($files)" ng-show="is_view==='false'">
+
+<button ng-click="my_view()" ng-show="is_view==='true'">回我的頁面</button>
+
+<div ng-show="is_view==='false'">
 	<button ng-click="req_joint();" ng-show="user.is_joint=='N'">邀請</button>
 	<form id="userForm" name="userForm" novalidate>
 		<input type="hidden" name="serial_id" value="{{user.serial_id}}" />
@@ -57,7 +83,7 @@ $(function(){
 	</form>
 </div>
 
-<?if($is_view):?>
+<?if($is_view==='true'):?>
 <div>
 爸爸名字:{{user.daddy}}
 媽媽名字:{{user.mom}}
@@ -72,10 +98,12 @@ $(function(){
 	<div ng-repeat="r in rank" sn="{{ $index }}">
 		<div>{{ r.babyname }}</div>
 	</div>
+<button ng-click="open_(2)">瀏覽更多</button>
 </div>
 
-<!-- 列表 -->
-<div id="list_div" style="display:none;">
+<!-- popup列表 -->
+<div id="list_div" style="display:none;background:#fff;">
+	<input type="text" ng-model="searchText" placeholder="請輸入寶寶姓名"/><button ng-click="search_()">搜尋</button>
 	<div ng-repeat="l in lists" sn="{{ $index }}">
 		<div>{{ l.babyname }}</div>
 	</div>
@@ -84,8 +112,8 @@ $(function(){
 
 <!-- 右半邊(資料更新才顯示) -->
 <div id="detail" ng-show="user.is_update=='Y'">
-	我朋友的寶寶<span id="fricnt" ng-click="open_(1)">{{user.friends_cnt}}</span>
-	<button ng-click="apprequests(3)" ng-show="user.friends_cnt==0 && <?=$is_view;?>">趕快幫寶寶交朋友</button>
+	我寶寶的朋友<span id="fricnt" ng-click="open_(1)">{{friends.length}}</span>
+	<button ng-click="apprequests(3)" ng-show="user.friends_cnt==0 && is_view==='false'">趕快幫寶寶交朋友</button>
 
 	<!-- 留言 -->
 	<div>
@@ -96,18 +124,17 @@ $(function(){
 
 	<div ng-repeat="m in msg" sn="{{ $index }}">
 		<a href="<?=site_url('main/view');?>/{{m.baby_serial}}">
-			<img src="img/a.jpg" ng-show="m.file_id == NULL"/>
+			<img src="img/a.jpg" ng-show="m.photo == NULL"/>
+			<img src="{{m.photo}}" ng-show="m.photo != NULL" />
 		</a>
 		<div>
 			<span>
 				<a href="<?=site_url('main/view');?>/{{m.baby_serial}}">{{ m.babyname }}</a> → 
 			</span>{{user.babyname}}
-		</div>
+		</div><button ng-click="confirm('是否刪除','delmsg',$index);" ng-show="is_view==='false'">刪除</button>
 		{{ m.message }}
 	</div>
 </div>
-
-
 
 
 

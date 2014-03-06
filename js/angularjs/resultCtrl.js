@@ -1,17 +1,39 @@
-var app = angular.module("myApp", ['ui.bootstrap']);
+var app = angular.module("myApp", ['ui.bootstrap', 'angularFileUpload', 'dialogs']);
 
 app.factory('myData', function() {
-	var data = friends;
-
 	return {
-		get: function(offset, limit) {
+		get: function(data, offset, limit) {
 			return data.slice(offset, offset + limit);
 		},
-		count: function() {
+		count: function(data) {
 			return data.length;
 		}
 	};
 });
+
+app.factory('myHttp', function($rootScope) {
+	return {
+		set: function(url, params, func, obj) {
+			$rootScope.ajaxv = [];
+			$rootScope.ajaxv.func = func;
+			$rootScope.ajaxv.obj = obj;
+			$rootScope.$broadcast('proccess');
+			// _show($('#loading'));
+			// $http({
+			// 	method: 'POST',
+			// 	url: url,
+			// 	headers: {
+			// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+			// 	},
+			// 	data: params
+			// }).success(function(data) {
+			// 	$rootScope.ajax.Data = data;
+			// 	$rootScope.$broadcast('proccess');
+			// });
+		}
+	};
+});
+
 
 /**
  * [結果頁]
@@ -19,14 +41,65 @@ app.factory('myData', function() {
  * @param  {[type]} $http  [description]
  * @return {[type]}        [description]
  */
-app.controller("resultCtrl", function($scope, $http, myData) {
+app.controller("resultCtrl", function($scope, $http, myData, myHttp, $timeout, $upload, $dialogs, myHttp) {
 	$scope.user = user;
 	$scope.msg = msg;
 	$scope.rank = rank;
-	// $scope.serial_id = user.serial_id;
 
 	/**
-	 * [sexchange 更改性別]
+	 * ajax 回應處理
+	 * @return {[type]} [description]
+	 */
+	$scope.$on('proccess', function() {
+		data = $scope.ajaxv.data;
+		o = $scope.ajaxv.obj;
+		switch ($scope.ajaxv.func) {
+			case 'joint':
+				if (data.success) {
+					show_toastr('toast-top-right', 'success', '邀請成功！', '');
+				}
+				break;
+			case 'edit_':
+				if (data.success) {
+					show_toastr('toast-top-right', 'success', '編輯成功！', '');
+				}
+				user.is_update = 'Y';
+				break;
+			case 'add_friend':
+				if (data.success) {
+					show_toastr('toast-top-right', 'success', '加入成功！', '');
+					$scope.is_friend = 'true';
+					$scope.friends = data.friends;
+					$scope.lists = data.friends;
+				}
+				break;
+			case 'open_2':
+			case 'open_3':
+				$scope.lists = data.rank;
+				$scope.pageinit();
+				_show($('#list_div'));
+				break;
+			case 'search_':
+				$scope.lists = data.rank;
+				$scope.pageinit();
+				break;
+			case 'set_message':
+				$scope.msg = data.msg;
+				$scope.message = '';
+				break;
+			case 'del_message':
+				$scope.msg.splice(o, 1);
+				show_toastr('toast-top-right', 'success', '刪除成功！', '');
+				break;
+			case 'pick_pic':
+				$scope.setmypic(o);
+				break;
+		}
+		_show($('#loading'));
+	});
+
+	/**
+	 * [sexchange 更改性別處理]
 	 * @param  {[type]} o [description]
 	 * @return {[type]}   [description]
 	 */
@@ -90,19 +163,21 @@ app.controller("resultCtrl", function($scope, $http, myData) {
 			if (o == 1) {
 				$scope.edit_();
 			} else if (o == 2 && response.request && response.to) {
-				$http({
-					method: 'POST',
-					url: jointurl,
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-					},
-					data: 'serial_id=' + user.serial_id + '&tofbid=' + response.to
-				}).success(function(data) {
-					if (data.success) {
-						show_toastr('toast-top-right', 'success', '邀請成功！', '');
-					}
-					_show($('#loading'));
-				});
+				params = 'serial_id=' + user.serial_id + '&tofbid=' + response.to;
+				myHttp.set(jointurl, params, 'joint');
+				// $http({
+				// 	method: 'POST',
+				// 	url: jointurl,
+				// 	headers: {
+				// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+				// 	},
+				// 	data: 
+				// }).success(function(data) {
+				// 	if (data.success) {
+				// 		show_toastr('toast-top-right', 'success', '邀請成功！', '');
+				// 	}
+				// 	_show($('#loading'));
+				// });
 			}
 		}
 	}
@@ -112,38 +187,123 @@ app.controller("resultCtrl", function($scope, $http, myData) {
 	 * @return {[type]} [description]
 	 */
 	$scope.edit_ = function() {
-		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: editurl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			},
-			data: $('#userForm').serialize()
-		}).success(function(data) {
-			if (data.success) {
-				show_toastr('toast-top-right', 'success', '編輯成功！', '');
-			}
-			user.is_update = 'Y';
-			_show($('#loading'));
-		});
+		params = $('#userForm').serialize();
+		myHttp.set(editurl, params, 'edit_');
+		// _show($('#loading'));
+		// $http({
+		// 	method: 'POST',
+		// 	url: editurl,
+		// 	headers: {
+		// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		// 	},
+		// 	data: $('#userForm').serialize()
+		// }).success(function(data) {
+		// 	if (data.success) {
+		// 		show_toastr('toast-top-right', 'success', '編輯成功！', '');
+		// 	}
+		// 	user.is_update = 'Y';
+		// 	_show($('#loading'));
+		// });
 	}
 
+	$scope.is_view = is_view;
+	$scope.is_friend = is_friend;
+	$scope.friends = friends;
 	$scope.lists = friends;
+
+	/**
+	 * [add_friend description]
+	 * @param {[type]} o [description]
+	 */
+	$scope.add_friend = function(o) {
+		params = 'serial_id=' + o + '&is_view=' + $scope.is_view;
+		myHttp.set(editurl, params, 'add_friend');
+		// _show($('#loading'));
+		// $http({
+		// 	method: 'POST',
+		// 	url: addfriendurl,
+		// 	headers: {
+		// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		// 	},
+		// 	data: 'serial_id=' + o + '&is_view=' + $scope.is_view
+		// }).success(function(data) {
+		// 	if (data.success) {
+		// 		show_toastr('toast-top-right', 'success', '加入成功！', '');
+		// 		$scope.is_friend = 'true';
+		// 		$scope.friends = data.friends;
+		// 		$scope.lists = data.friends;
+		// 	}
+		// 	_show($('#loading'));
+		// });
+	}
+
+	$scope.list_o = 0;
 	/**
 	 * [open_ 寶寶列表]
-	 * @param  {[type]} o [1:好友,2:所有]
+	 * @param  {[type]} o [1:好友,2:所有,3:排行]
 	 * @return {[type]}   [description]
 	 */
 	$scope.open_ = function(o) {
+		$scope.list_o = o;
 		if (o == 1) {
-			$scope.lists = friends;
+			$scope.lists = $scope.friends;
 			_show($('#list_div'));
-			$scope.pageChanged(1);
+			$scope.pageinit();
 		} else if (o == 2) {
-			$scope.oid = o;
-			_show($('#list_div'));
+			params = [];
+			myHttp.set(moreurl + '/' + o, params, 'open_' + o);
+			// _show($('#loading'));
+			// $http({
+			// 	method: 'POST',
+			// 	url: moreurl + '/2',
+			// 	headers: {
+			// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+			// 	},
+			// 	data: $('#userForm').serialize()
+			// }).success(function(data) {
+			// 	_show($('#loading'));
+			// 	$scope.lists = data.rank;
+			// 	$scope.pageinit();
+			// 	_show($('#list_div'));
+			// });
+		} else if (o == 3) {
+			params = [];
+			myHttp.set(moreurl + '/' + o, params, 'open_' + o);
+			// $http({
+			// 	method: 'POST',
+			// 	url: moreurl + '/3',
+			// 	headers: {
+			// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+			// 	},
+			// 	data: $('#userForm').serialize()
+			// }).success(function(data) {
+			// 	$scope.lists = data.rank;
+			// 	$scope.pageinit();
+			// 	_show($('#list_div'));
+			// });
 		}
+	}
+
+	/**
+	 * [search_ 搜尋]
+	 * @return {[type]} [description]
+	 */
+	$scope.search_ = function() {
+		params = 'search=' + $scope.searchText;
+		myHttp.set(moreurl + '/' + o, params, 'search_');
+		// _show($('#loading'));
+		// $http({
+		// 	method: 'POST',
+		// 	url: moreurl + '/' + $scope.list_o,
+		// 	headers: {
+		// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		// 	},
+		// 	data: 'search=' + $scope.searchText
+		// }).success(function(data) {
+		// 	$scope.lists = data.rank;
+		// 	$scope.pageinit();
+		// 	_show($('#loading'));
+		// });
 	}
 
 	// datepicker
@@ -155,15 +315,29 @@ app.controller("resultCtrl", function($scope, $http, myData) {
 	$scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'shortDate'];
 	$scope.format = $scope.formats[1];
 
-	// pagination
-	$scope.maxSize = 5;
-	$scope.bigTotalItems = $scope.lists.length;
-	$scope.bigCurrentPage = 1;
-	$scope.numPerPage = 1;
+	/**
+	 * [pageChanged 頁碼]
+	 * @param  {[type]} pageNo [description]
+	 * @return {[type]}        [description]
+	 */
 	$scope.pageChanged = function(pageNo) {
 		$scope.bigCurrentPage = pageNo;
-		$scope.lists = myData.get(($scope.bigCurrentPage - 1) * $scope.numPerPage, $scope.numPerPage);
+		$scope.lists = myData.get($scope.pageList, ($scope.bigCurrentPage - 1) * $scope.numPerPage, $scope.numPerPage);
 	};
+
+	/**
+	 * [pageinit 初始化]
+	 * @return {[type]} [description]
+	 */
+	$scope.pageinit = function() {
+		$scope.maxSize = 5;
+		$scope.bigTotalItems = $scope.lists.length;
+		$scope.bigCurrentPage = 1;
+		$scope.numPerPage = 1;
+		$scope.pageList = $scope.lists;
+		$scope.pageChanged(1);
+	}
+	$scope.pageinit();
 
 	$scope.my_view = function() {
 		location.href = resulturl;
@@ -177,244 +351,135 @@ app.controller("resultCtrl", function($scope, $http, myData) {
 			show_toastr('toast-top-right', 'error', '請輸入留言！', '');
 			return;
 		}
+		params = 'message=' + $scope.message + '&serial_id=' + user.serial_id;
+		myHttp.set(msgurl, params, 'set_message');
+		// _show($('#loading'));
+		// $http({
+		// 	method: 'POST',
+		// 	url: msgurl,
+		// 	headers: {
+		// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		// 	},
+		// 	data: 'message=' + $scope.message + '&serial_id=' + user.serial_id
+		// }).success(function(data) {
+		// 	_show($('#loading'));
+		// 	$scope.msg = data.msg;
+		// 	$scope.message = '';
+		// });
+	}
+
+	$scope.del_message = function(o) {
+		params = 'serial_id=' + user.serial_id;
+		myHttp.set(dmsgurl, params, 'del_message');
+		// _show($('#loading'));
+		// $http({
+		// 	method: 'POST',
+		// 	url: dmsgurl,
+		// 	headers: {
+		// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		// 	},
+		// 	data: 'serial_id=' + user.serial_id
+		// }).success(function(data) {
+		// 	_show($('#loading'));
+		// 	$scope.msg.splice(o, 1);
+		// 	show_toastr('toast-top-right', 'success', '刪除成功！', '');
+		// });
+	}
+
+	/**
+	 * [gallery 圖庫上傳]
+	 * @return {[type]} [description]
+	 */
+	$scope.gallery = function() {
+		_show($('#gallery_div'));
+	}
+
+	/**
+	 * [pick_pic 選圓庫]
+	 * @param  {[type]} o [description]
+	 * @return {[type]}   [description]
+	 */
+	$scope.pick_pic = function(o) {
+		_show($('#gallery_div'));
+		params = 'path=' + o + '&serial_id=' + user.serial_id;
+		myHttp.set(setpicurl, params, 'pick_pic');
+		// _show($('#loading'));
+		// $http({
+		// 	method: 'POST',
+		// 	url: setpicurl,
+		// 	headers: {
+		// 		'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		// 	},
+		// 	data: 'path=' + o + '&serial_id=' + user.serial_id
+		// }).success(function(data) {
+		// 	_show($('#loading'));
+		// 	$scope.setmypic(o);
+		// });
+	}
+
+	/**
+	 * [setmypic 更新圖片]
+	 * @param  {[type]} o [路徑]
+	 * @return {[type]}   [description]
+	 */
+	$scope.setmypic = function(o) {
+		$scope.mypic = o;
+	}
+	/**
+	 * [onFileSelect 照片上傳]
+	 * @param  {[type]} $files [description]
+	 * @return {[type]}        [description]
+	 */
+	$scope.onFileSelect = function($files) {
+		var file = $files[0];
 		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: msgurl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		$scope.upload = $upload.upload({
+			url: uploadurl, //upload.php script, node.js route, or servlet url
+			// method: POST or PUT,
+			// headers: {'headerKey': 'headerValue'},
+			// withCredentials: true,
+			data: {
+				serial_id: user.serial_id
 			},
-			data: 'message=' + $scope.message + '&serial_id=' + user.serial_id
-		}).success(function(data) {
+			file: file,
+			// file: $files, //upload multiple files, this feature only works in HTML5 FromData browsers
+			/* set file formData name for 'Content-Desposition' header. Default: 'file' */
+			fileFormDataName: 'fileToUpload', //OR for HTML5 multiple upload only a list: ['name1', 'name2', ...]
+			/* customize how data is added to formData. See #40#issuecomment-28612000 for example */
+			//formDataAppender: function(formData, key, val){} //#40#issuecomment-28612000
+		}).progress(function(evt) {
+			console.log('percent: ' + parseInt(100.0 * evt.loaded / evt.total));
+		}).success(function(data, status, headers, config) {
+			// file is uploaded successfully
 			_show($('#loading'));
-			$scope.msg = data.msg;
-			$scope.message = '';
+			$scope.mypic = data.src;
+
 		});
 	}
 
-	$scope.exchange = function(pid, p) {
-		if (eval($scope.point) < eval(p)) {
-			show_toastr('toast-top-right', 'error', '您的點數不足於兌換！', '');
-			return;
-		}
-		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: exchangeurl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			},
-			data: 'prize_serial=' + pid + '&point=' + p
-		}).success(function(data) {
-			if (data.success) {
-				show_toastr('toast-top-right', 'success', '兌換成功！', '');
+	$scope.confirm = function(msg, func, val) {
+		var dlg = $dialogs.confirm('Please Confirm', msg);
+		dlg.result.then(function(btn) {
+			if (func == 'powall') {
+				show_toastr('toast-top-right', 'success', '分享成功！', ''); //$scope.powall();	
 			} else {
-				show_toastr('toast-top-right', 'error', '兌換失敗！', '');
+				show_toastr('toast-top-right', 'success', '刪除成功！', ''); //$scope.del_message(val);	
 			}
-			$scope.point = data.point;
-			_show($('#loading'));
-		});
+		}, function(btn) {});
 	}
-	$scope.more = function() {
-		location.href = moreurl;
-	}
-	$scope.refresh = function() {
-		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: refreshurl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			}
-		}).success(function(data) {
-			$scope.point = data;
-			_show($('#loading'));
-		});
-	}
-	$scope.share = function() {
-		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: shareurl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			}
-		}).success(function(data) {
-			if (data.success) {
-				show_toastr('toast-top-right', 'success', '分享完成！', '');
-			} else {
-				show_toastr('toast-top-right', 'warning', '您已分享過！', '');
-			}
-			$scope.point = data.point;
-			_show($('#loading'));
-		});
-	}
-	$scope.submit_ = function() {
-		if (!checkform()) {
-			return;
-		}
-		$.ajax({
-			url: setDataurl,
-			cache: false,
-			type: 'post',
-			data: $('#data_form').serialize(),
-			dataType: 'json',
-			beforeSend: function(html) {
-				record('share_record');
-				_show($('#loading'));
-			},
-			error: function(e) {
-				//alert("error:"+e.responseText);
-			},
-			success: function(html) {
-				_show($('#data_'));
-				show_toastr('toast-top-right', 'success', '恭喜參加抽獎！', '');
-			},
-			complete: function() {
-				_show($('#loading'));
-			}
-		});
-	}
+
 	$scope.powall = function() {
-		if (confirm('快告訴大家你的超完美強棒應援團，和他們一起贏得人生中重要的比賽吧！')) {
+		_show($('#loading'));
+		$http({
+			method: 'POST',
+			url: posturl,
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+			},
+			data: "type=share"
+		}).success(function(data) {
 			_show($('#loading'));
-			$http({
-				method: 'POST',
-				url: posturl,
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-				},
-				data: "type=share"
-			}).success(function(data) {
-				_show($('#loading'));
-				if (count == 1) {
-					_show($('#data_'));
-				}
-			});
-		}
-	}
-});
-
-var backend = angular.module("myBackend", []).directive('numbersOnly', function() {
-	return {
-		require: 'ngModel',
-		link: function(scope, element, attrs, modelCtrl) {
-			modelCtrl.$parsers.push(function(inputValue) {
-				// this next if is necessary for when using ng-required on your input. 
-				// In such cases, when a letter is typed first, this parser will be called
-				// again, and the 2nd time, the value will be undefined
-				if (inputValue == undefined) return ''
-				var transformedInput = inputValue.replace(/[^0-9]/g, '');
-				if (transformedInput != inputValue) {
-					modelCtrl.$setViewValue(transformedInput);
-					modelCtrl.$render();
-				}
-				return transformedInput;
-			});
-		}
-	};
-});
-backend.controller("prizeController", function($scope, $http) {
-	$scope.prizes = prizes;
-	$scope.point = point;
-	$scope.back_ = function() {
-		location.href = prizeUrl;
-	}
-	$scope.create_ = function() {
-		location.href = createUrl;
-	}
-	$scope.edit_ = function(o) {
-		location.href = editUrl + '/' + o;
-	}
-	$scope.submit_ = function(o) {
-		if ($('#title').val() == '') {
-			//bootbox.alert('請輸入留言！');
-			show_toastr('toast-top-left', 'error', '請輸入獎品標題！', '');
-			return;
-		}
-		if ($('#img').val() == '') {
-			//bootbox.alert('請輸入留言！');
-			show_toastr('toast-top-left', 'error', '請上傳獎品圖片！', '');
-			return;
-		}
-		if ($('#point').val() == '') {
-			//bootbox.alert('請輸入留言！');
-			show_toastr('toast-top-left', 'error', '請輸入兌換點數！', '');
-			return;
-		}
-		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: saveUrl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			},
-			data: $('#form').serialize()
-		}).success(function(data) {
-			show_toastr('toast-top-right', 'success', '新增成功！', '');
-			setTimeout(function() {
-				$scope.back_();
-			}, 3000);
-		});
-	}
-	$scope.dragStart = function(e, ui) {
-		ui.item.data('start', ui.item.index());
-	}
-	$scope.dragEnd = function(e, ui) {
-		var start = ui.item.data('start'),
-			end = ui.item.index();
-		$scope.prizes.splice(end, 0, $scope.prizes.splice(start, 1)[0]);
-		$scope.$apply();
-	}
-	sortableEle = $('#sortable').sortable({
-		start: $scope.dragStart,
-		update: $scope.dragEnd
-	});
-});
-backend.controller("articleController", function($scope, $http) {
-	$scope.articles = articles;
-	if (article != null) {
-		$scope.post_id = article.post_id;
-		$scope.title = article.title;
-		$scope.start_time = article.start_time;
-		$scope.end_time = article.end_time;
-	}
-	$scope.back_ = function() {
-		location.href = articleUrl;
-	}
-	$scope.create_ = function() {
-		location.href = createUrl;
-	}
-	$scope.submit_ = function(o) {
-		if ($('#post_id').val() == '') {
-			show_toastr('toast-top-left', 'error', '請輸入文章id！', '');
-			return;
-		}
-		if ($('#title').val() == '') {
-			show_toastr('toast-top-left', 'error', '請輸入文章標題！', '');
-			return;
-		}
-		if ($('#start_time').val() == '') {
-			show_toastr('toast-top-left', 'error', '請選擇開始日期！', '');
-			return;
-		}
-		if ($('#end_time').val() == '') {
-			show_toastr('toast-top-left', 'error', '請選擇結束日期！', '');
-			return;
-		}
-		_show($('#loading'));
-		$http({
-			method: 'POST',
-			url: saveUrl,
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-			},
-			data: $('#form').serialize()
-		}).success(function(data) {
-			show_toastr('toast-top-right', 'success', '新增成功！', '');
-			setTimeout(function() {
-				$scope.back_();
-			}, 3000);
+			show_toastr('toast-top-right', 'success', '分享成功！', '');
 		});
 	}
 });

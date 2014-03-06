@@ -6,7 +6,6 @@ class File_main extends CI_Controller {
 	}
 
 	public function do_upload(){
-		
 		$error = "";
 		$msg = "";
 		$msg2 = "";
@@ -30,40 +29,41 @@ class File_main extends CI_Controller {
 		if($error==""){
 			$scale = true;
 			$filename=$_FILES[$fileElementName]['tmp_name'];
-			if($_POST['imgsize']=='wall'){
-				$max_width = 540;
-				$max_height = 480;
-				$scale = false;
-			}else if($_POST['imgsize']=='webimg'){
-				$max_width = 540;
-				$max_height = 480;
-				$scale = false;
-			}else if($_POST['imgsize']=='webimgth'){
-				$max_width = 180;
-				$max_height = 160;
-			}else if($_POST['imgsize']=='thumb'){
-				$max_width = 180;
-				$max_height = 160;
-			}else if($_POST['imgsize']=='picthumb'){
-				$max_width = 180;
-				$max_height = 180;
-			}
+			$max_width = 170;
+			$max_height = 170;
+			$scale = false;
 			
-			$dir = 'tmp/'.$_POST['dir'];
+			$dir = 'tmp/'.$_POST['serial_id'];
 			if (!is_dir($dir)) {
 				mkdir($dir);
 			}
 			
+			$file_id = time();
 			$params = array(
 				'filename' => $filename,
 				'max_width' => $max_width,
 				'max_height' => $max_height,
 				'scale' => $scale,
-				'savename'=>$dir.'/'.time()
+				'savename'=>$dir.'/'.$file_id
 				);
+
 			$this->load->library('gd_creater');
 			$json = $this->gd_creater->upload($params);
 			$json['error'] = $error;
+
+			$params = array(
+				'file_id' => $file_id,
+				'path' => $json['src'],
+				'baby_serial' => $_POST['serial_id']
+				);
+			$this->file_info_md->insert($params);
+			$params = array(
+				'path' => $json['src']
+				);
+			$where = array(
+				'serial_id' => $_POST['serial_id']
+				);
+			$this->baby_info_md->update($params,$where);
 		}
 // 		@unlink($_FILES['file']);
 		echo json_encode($json);

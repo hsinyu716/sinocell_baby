@@ -57,9 +57,6 @@ var prizeUrl = '<?=site_url('backend/prize');?>';
 		<span class="input-group-addon">兌換點數：</span>
 		<input type="text" id="point" ng-model="point" name="point" numbers-only="numbers-only"  class="required form-control"/>
 	</div>
-
-	
-
 </form>
 <br/>
 <button type="button" class="btn btn-default" ng-click="submit_();"><span class="glyphicon glyphicon-save"></span>送出</button>

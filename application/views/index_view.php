@@ -6,7 +6,7 @@ var resulturl = "<?=site_url('main/result');?>";
 
 </script>
 
-<div id="indexobj" ng-controller="indexCtrl">
+<div id="angularobj" ng-controller="indexCtrl">
 
 <form id="baby_form" method="POST" action="<?=site_url('main/result');?>">
   <input type="text" placeholder="請輸入寶寶名字(或綽號)" ng-model="babyname" name="babyname"/>

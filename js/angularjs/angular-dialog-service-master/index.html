@@ -1,0 +1,27 @@
+<html ng-app="modalTest">
+	<head>
+		<script src="http://code.angularjs.org/1.2.9/angular.min.js"></script>
+		<script src="http://code.angularjs.org/1.2.9/angular-sanitize.min.js"></script>
+		<script src="js/ui-bootstrap-custom-tpls-0.10.0.min.js"></script>
+		<script src="js/dialogs.js"></script>
+		<script src="js/dialogTest.js"></script>
+	
+		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/dialogs.css">
+		
+		<style>
+			body { padding: 20px; }
+		</style>
+	</head>
+	<body ng-controller="dialogServiceTest">
+		<div class="row">
+			<div class="col-md-12">
+				<button class="btn btn-danger" ng-click="launch('error')">Error Dialog</button>
+				<button class="btn btn-primary" ng-click="launch('wait')">Wait Dialog</button>
+				<button class="btn btn-default" ng-click="launch('notify')">Notify Dialog</button>
+				<button class="btn btn-success" ng-click="launch('confirm')">Confirm Dialog</button>
+        		<button class="btn btn-warning" ng-click="launch('custom')">Custom Dialog</button>
+			</div>
+		</div>
+	</body>
+</html>

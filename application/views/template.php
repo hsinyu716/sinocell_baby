@@ -14,15 +14,19 @@
         <?= $_styles ?>
         
         <script type="text/javascript" src="<?= WEB_HOST ?>js/bootbox.min.js"></script>
-        <!-- bootstrap -->
+
+         <!-- bootstrap --><!-- 
         <script type="text/javascript" src="<?= WEB_HOST ?>bootstrap/js/bootstrap.min.js" ></script>
-        <link rel="stylesheet" href="<?= WEB_HOST ?>bootstrap/css/bootstrap.min.css">
-        
-        <!-- AngularJS -->
+        <link rel="stylesheet" href="<?= WEB_HOST ?>bootstrap/css/bootstrap.min.css"> -->
+
+        <!-- AngularJS & bootstrap -->
         <script src="<?= WEB_HOST ?>js/angularjs/angular.min.js"></script>
         <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.10.0.js"></script>
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
-        
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet prefetch">
+        <script src="<?= WEB_HOST ?>js/angularjs/angular-dialog-service-master/js/dialogs.js"></script>
+        <link rel="stylesheet" href="<?= WEB_HOST ?>js/angularjs/angular-dialog-service-master/css/dialogs.css">
+        <script src="http://code.angularjs.org/1.2.9/angular-sanitize.min.js"></script>
+
         <!-- toastr -->
         <script type="text/javascript" src="<?= WEB_HOST ?>js/toastr/toastr.js" ></script>
         <link href="<?= WEB_HOST ?>js/toastr/toastr.css" rel="stylesheet" type="text/css" />
@@ -69,7 +73,7 @@
 
             var func = 'result';
             function next_(){
-                angular.element(document.getElementById('indexobj')).scope().$apply(function(scope){
+                angular.element(document.getElementById('angularobj')).scope().$apply(function(scope){
                     scope.check_user();
                 });
             }

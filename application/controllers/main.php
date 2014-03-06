@@ -129,6 +129,11 @@ class Main extends CI_Controller {
 		endif;
 	}
 
+	/**
+	 * [getfriend description]
+	 * @param  integer $sid [description]
+	 * @return [type]       [description]
+	 */
 	public function getfriend($sid=0){
 		$params = array(
 			'a_baby' => $sid
@@ -141,7 +146,60 @@ class Main extends CI_Controller {
 				);
 			$friends[] = $this->baby_infov_md->get_one($params);
 		endforeach;
-		return $friends;
+		if(!empty($_POST['is_ajax'])):
+			echo json_encode($friends);
+		else:
+			return $friends;
+		endif;
+	}
+
+	public function getMsg($sid){
+		$params = array(
+			'baby_serial' => $sid
+			);
+		$msg = $this->msg_info_md->getData($params);
+
+		foreach($msg as $mk=>$mv):
+			$baby = $this->check_user(false,$mv['fbid']);
+			$msg[$mk]['babyname'] = $baby['babyname'];
+			$msg[$mk]['baby_serial'] = $baby['serial_id'];
+			$msg[$mk]['photo'] = $baby['path'];
+		endforeach;
+
+		return $msg;
+	}
+
+	/**
+	 * [add_friend 加好友]
+	 */
+	public function add_friend(){
+		$fbid = $this->facebook->getUser();
+		$check_user = $this->check_user(false,$fbid);
+		$params[] = array(
+			'a_baby' => $check_user['serial_id'],
+			'b_baby' => $_POST['serial_id']
+			);
+		$params[] = array(
+			'b_baby' => $check_user['serial_id'],
+			'a_baby' => $_POST['serial_id']
+			);
+		$rs2 = $this->friend_info_md->getData($params[0]);
+		if(sizeof($rs2)==0):
+			$this->friend_info_md->insert_batch($params);
+		endif;
+
+
+		$sid = $check_user['serial_id'];
+		if($_POST['is_view']):
+			$sid = $_POST['serial_id'];
+		endif;
+		$friends = $this->getfriend($sid);
+
+		$json = array(
+			'success' => true,
+			'friends' => $friends
+			);
+		echo json_encode($json);
 	}
 	
 	public function result($babyname='') {
@@ -150,8 +208,12 @@ class Main extends CI_Controller {
 		$data['fbid'] = $fbid;
 		$user = $this->facebook_model->getUser($fbid);
 
+		echo date('<br/>(1):i:s',time());
 		$check_user = $this->check_user(false);
+		echo date('<br/>(2):i:s',time());
+		$into = false;
 		if(sizeof($check_user)==0):
+			$into = true;
 			if($user['sex']=='male'):
 				$params = array(
 					'fbid_d' => $fbid,
@@ -171,23 +233,18 @@ class Main extends CI_Controller {
 		endif;
 		
 		// var_dump($check_user);
-		$check_user = $this->check_user(false);
+		if($into):
+			$check_user = $this->check_user(false);
+		endif;
 		$data['user'] = $check_user;
-		$params = array(
-			'baby_serial' => $check_user['serial_id']
-			);
-		$msg = $this->msg_info_md->getData($params);
-
-		foreach($msg as $mk=>$mv):
-			$baby = $this->check_user(false,$mv['fbid']);
-			$msg[$mk]['babyname'] = $baby['babyname'];
-			$msg[$mk]['baby_serial'] = $baby['serial_id'];
-			$msg[$mk]['photo'] = $baby['file_id'];
-		endforeach;
-
+		echo date('<br/>(3):i:s',time());
+		$msg = $this->getMsg($check_user['serial_id']);
+		echo date('<br/>(4):i:s',time());
 		$data['msg'] = $msg;
 
+		echo date('<br/>(5):i:s',time());
 		$friends = $this->getfriend($check_user['serial_id']);
+		echo date('<br/>(6):i:s',time());
 
 		$data['friends'] = $friends;
 
@@ -196,15 +253,22 @@ class Main extends CI_Controller {
 			);
 		$limit = 3;
 		$offset = 0;
+		echo date('<br/>(7):i:s',time());
 		$rank = $this->rank($order,$limit,$offset);
+		echo date('<br/>(8):i:s',time());
 		$data['rank'] = $rank;
-		$data['is_view'] = false;
-		$data['is_friend'] = true;
+		$data['is_view'] = 'false';
+		$data['is_friend'] = 'true';
 		// var_dump($rank);
 
 		$this->init_model->apply_template_with_ga($this->router->method . '_view', $data);
 	}
-	
+
+	/**
+	 * [view 檢視頁]
+	 * @param  [type] $serial_id [description]
+	 * @return [type]            [description]
+	 */
 	public function view($serial_id) {
 		$data = $this->_getBaseData();
 
@@ -214,17 +278,8 @@ class Main extends CI_Controller {
 		$check_user = $this->baby_infov_md->get_one($params);
 
 		$data['user'] = $check_user;
-		$params = array(
-			'baby_serial' => $check_user['serial_id']
-			);
-		$msg = $this->msg_info_md->getData($params);
 
-		foreach($msg as $mk=>$mv):
-			$baby = $this->check_user(false,$mv['fbid']);
-			$msg[$mk]['babyname'] = $baby['babyname'];
-			$msg[$mk]['baby_serial'] = $baby['serial_id'];
-			$msg[$mk]['photo'] = $baby['file_id'];
-		endforeach;
+		$msg = $this->getMsg($check_user['serial_id']);
 
 		$data['msg'] = $msg;
 
@@ -242,9 +297,8 @@ class Main extends CI_Controller {
 
 		$age = getAge($check_user['babybirthday']);
 		$data['age'] = $age;
-		$data['is_view'] = true;
-		// var_dump($rank);
-		
+		$data['is_view'] = 'true';
+
 		$fbid = $this->facebook->getUser();
 		$mydata = $this->check_user(false,$fbid);
 		$params = array(
@@ -252,16 +306,31 @@ class Main extends CI_Controller {
 			'b_baby' => $check_user['serial_id']
 			);
 		$rs = $this->friend_info_md->getCount($params);
-		$is_friend = false;
+		$is_friend = 'false';
 		if($mydata['serial_id']==$check_user['serial_id'] || $rs==1):
-			$is_friend = true;
+			$is_friend = 'true';
 		endif;
 		$data['is_friend'] = $is_friend;
-
 
 		$this->init_model->apply_template_with_ga('result_view', $data);
 	}
 
+	/**
+	 * [set_pic 設定圖庫]
+	 */
+	public function set_pic(){
+		$params = array(
+			'path' => $_POST['path']
+			);
+		$where = array(
+			'serial_id' => $_POST['serial_id']
+			);
+		$this->baby_info_md->update($params,$where);
+		$json = array(
+			'success' => true
+			);
+		echo json_encode($json);
+	}
 
 	/**
 	 * [rank 排名]
@@ -292,6 +361,10 @@ class Main extends CI_Controller {
 		echo timespan($post_date, $now);
 	}
 
+	/**
+	 * [joint 共同經營]
+	 * @return [type] [description]
+	 */
 	public function joint(){
 		$check_user = $this->check_user(false);
 		// var_dump($check_user);
@@ -312,21 +385,25 @@ class Main extends CI_Controller {
 		echo json_encode($json);
 	}
 
+	/**
+	 * [set_message 留言]
+	 */
 	public function set_message(){
 		$fbid = $this->facebook->getUser();
 		
 		$params = $this->get_post('msg_info');
 		$this->msg_info_md->insert($params);
-		$params = array(
-			'baby_serial' => $_POST['serial_id']
-			);
-		$msg = $this->msg_info_md->getData($params);
+		$msg = $this->getMsg($_POST['serial_id']);
 		$json = array(
 			'msg' => $msg
 			);
 		echo json_encode($json);
 	}
 
+	/**
+	 * [edit 編輯寶寶]
+	 * @return [type] [description]
+	 */
 	public function edit(){
 		$params = $this->get_post('baby_info');
 		$where = $this->get_where('baby_info');
@@ -337,6 +414,33 @@ class Main extends CI_Controller {
 				'success' => $success
 		);
 		
+		echo json_encode($json);
+	}
+
+	public function ajax_list($o){
+		$params = array();
+		$s = '';
+		if(!empty($_POST['search'])):
+			$s = $_POST['search'];
+			$params = array(
+				'babyname' => $s
+					);
+		endif;
+		
+		$order = array();
+		if($o==2):
+			$order = array();
+		elseif($o==3):
+			$order = array(
+				'friends_cnt' => 'desc'
+				);
+		endif;
+
+		$list = $this->baby_infov_md->getLike($params,$order);
+		$list = array_merge($list,$list,$list,$list,$list,$list,$list,$list,$list,$list);
+		$json = array(
+			'rank' => $list
+			);
 		echo json_encode($json);
 	}
 
